@@ -17,6 +17,7 @@ nvm
 ## install 
 mysql client
 nvm
+pm2
 
 
 # NOW Create image both web and app Tier
@@ -80,7 +81,8 @@ APP-Tier-IAM-IMAGE
                     | 10.75.10.0/24 |   10.75.11.0/24   | 10.75.12.0/24 |
                     | nat-1a        | nat-1b   | nat-1c   
 
-
+# Create a Cloud-Trail
+Nmae | my-aws-Account-Activity
 
 # Create the 2 S3 Buckets
 git clone https://github.com/harishnshetty/3-tier-aws-15-services.git
@@ -124,11 +126,29 @@ Other type of secret
 
  Secret name  = rds-mysql-secret
 
+
+##  Now add the Database into the RDS-MYSQL
+# Ref https://catalog.us-east-1.prod.workshops.aws/workshops/85cd2bb2-7f79-4e96-bdee-8078e469752a/en-US/part3/configuredatabase
+
+mysql -h CHANGE-TO-YOUR-RDS-ENDPOINT -u admin -p
+CREATE DATABASE webappdb;
+SHOW DATABASES;
+USE webappdb;
+CREATE TABLE IF NOT EXISTS transactions(id INT NOT NULL
+AUTO_INCREMENT, amount DECIMAL(10,2), description
+VARCHAR(100), PRIMARY KEY(id));
+SHOW TABLES;
+INSERT INTO transactions (amount,description) VALUES ('400','groceries');
+SELECT * FROM transactions;
+
+
 ## create SNS
 
 name | web-tier-sns
 
 name | app-tier-sns
+
+name | Cloudwatch-sns
 
  # Create a role for both web and app tier
 
@@ -154,28 +174,24 @@ User  Data
 
 ```bash
 #!/bin/bash
-sudo aws s3 cp s3://3-tier-aws-project-8745/application-code/web-tier web-tier --recursive
-sudo chown -R ec2-user:ec2-user /home/ec2-user
-sudo chmod -R 755 /home/ec2-user
+# Log everything to /var/log/user-data.log
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
+# Install AWS CLI v2 (if not already)
+yum install -y awscli
 
+# Download application code from S3
+aws s3 cp s3://three-tier-8745/application-code /home/ec2-user/application-code --recursive
 
-cd /home/ec2-user/web-tier
-npm install
+# Go to app directory
+cd /home/ec2-user/application-code
 
-cd /home/ec2-user/web-tier
-npm run build
-
-cd /etc/nginx
-sudo mv nginx.conf nginx-backup.conf
-
-sudo aws s3 cp s3://3-tier-aws-project-8745/application-code/nginx.conf . 
-sudo chmod -R 755 /home/ec2-user
-sudo systemctl restart nginx.service
-sudo chkconfig nginx on
+# Make script executable and run it
+chmod +x web.sh
+sudo ./web.sh
 ```
 
- # Create web launch template
+ # Create app launch template
 
 Name | app-tier-lt
 
@@ -187,33 +203,27 @@ IAM instance profile | 3-tier-web-role
 User  Data 
 
 ```bash
-
 #!/bin/bash
-cd /home/ec2-user
-sudo aws s3 cp s3://3-tier-aws-project-8745/application-code/app-tier app-tier --recursive
-cd app-tier
-sudo chown -R ec2-user:ec2-user /home/ec2-user/app-tier
-sudo chmod -R 755 /home/ec2-user/app-tier
+# Log everything to /var/log/user-data.log
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
-npm install @aws-sdk/client-secrets-manager mysql2
+# Install AWS CLI v2 (if not already)
+yum install -y awscli
 
-npm install
-npm audit fix
+# Download application code from S3
+aws s3 cp s3://three-tier-8745/application-code /home/ec2-user/application-code --recursive
 
-pm2 start index.js 	#(Start Application with PM2, PM2 is process manager for NodeJS)
+# Go to app directory
+cd /home/ec2-user/application-code
 
-pm2 startup 			  #(Set PM2 to Start on Boot)
-# Generate systemd startup script for ec2-user (nvm-managed Node.js)
-sudo env PATH=$PATH:/home/ec2-user/.nvm/versions/node/v*/bin \
-    /home/ec2-user/.nvm/versions/node/v*/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
-
-# Save the current PM2 process list
-pm2 save
-EOF
+# Make script executable and run it
+chmod +x app.sh
+sudo ./app.sh
 ```
 
 
 # Create target group 
+
 ## [ web tier ]
 Name | Web-tier
 Port | 80
@@ -241,7 +251,7 @@ AZ  | App-Private-Subnet-1a | App-Private-Subnet-1b | App-Private-Subnet-1c |
 Security groups | app-ALB
 Listeners and routing | 80 app-tier
 
-
+# immedailty update your nginx lb-address
 
 ## web-alb
 name | web-alb
@@ -295,7 +305,10 @@ Add notifications | web-tier-sns
 Tag | web-asg
 
 
+# Create the Cloudwatch 
+## all alarms --> ec2 --> ASG --> Cpuutlization
 
-
-
-db-3tier.cne0wymoyx30.ap-south-1.rds.amazonaws.com
+# create the Cloud-front
+# Create the ACM for the cloud-front
+# Configure the WAF
+# Configure the Route53
