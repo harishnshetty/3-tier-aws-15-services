@@ -1,4 +1,6 @@
 # AWS Three Tier Web Architecture Workshop
+## Architecture Overview
+![Architecture Diagram](https://github.com/harishnshetty/image-data-project/blob/c699b36dbe836af410a57079adb2e161267e78fc/3tieraws-project-15services.jpg)
 
 ## Setup the Ec2-instance and create the IAM (WEB Tier)
 **REF:** [web-tier](https://github.com/harishnshetty/3-tier-aws-15-services/edit/main/application-code/web-tier)
@@ -60,25 +62,24 @@
 |    |                  | DB-Private-Subnet-1b  | 10.75.11.0/24                                 |
 |    |                  | DB-Private-Subnet-1c  | 10.75.12.0/24                                 |
 
-| #  | Internet Gateway | 3-tier-igw            |                                               |
-| 3  | Nat gateway     | 3-tier-1a             |                                                |
-|    |                 | 3-tier-1b             |                                                |
-|    |                 | 3-tier-1c             |                                                |
-| 10 | Route-Table     | 3-tier-Public-rt      | --> attach all subnets in the single public route table |
+| #   | Component         | Name/Route Table                | CIDR/Details      | NAT Gateway | Notes                                         |
+|-----|-------------------|---------------------------------|-------------------|-------------|-----------------------------------------------|
+| 1   | Internet Gateway  | 3-tier-igw                      |                   |             |                                               |
+| 3   | Nat gateway       | 3-tier-1a                       |                   |             |                                               |
+|     |                   | 3-tier-1b                       |                   |             |                                               |
+|     |                   | 3-tier-1c                       |                   |             |                                               |
+| 10  | Route-Table       | 3-tier-Public-rt                |                   |             |                                               |
+|     |                   | 3-tier-web-Private-rt-1a        | 10.75.4.0/24      | nat-1a      |                                               |
+|     |                   | 3-tier-web-Private-rt-1b        | 10.75.5.0/24      | nat-1b      |                                               |
+|     |                   | 3-tier-web-Private-rt-1c        | 10.75.6.0/24      | nat-1c      |                                               |
+|     |                   | 3-tier-app-Private-rt-1a        | 10.75.7.0/24      | nat-1a      |                                               |
+|     |                   | 3-tier-app-Private-rt-1b        | 10.75.8.0/24      | nat-1b      |                                               |
+|     |                   | 3-tier-app-Private-rt-1c        | 10.75.9.0/24      | nat-1c      |                                               |
+|     |                   | 3-tier-db-Private-rt-1a         | 10.75.10.0/24     | nat-1a      |                                               |
+|     |                   | 3-tier-db-Private-rt-1b         | 10.75.11.0/24     | nat-1b      |                                               |
+|     |                   | 3-tier-db-Private-rt-1c         | 10.75.12.0/24     | nat-1c      |                                               |
+ 
 
-|    |                 | 3-tier-web-Private-rt-1a | 10.75.4.0/24 | nat-1a |
-|    |                 | 3-tier-web-Private-rt-1b | 10.75.5.0/24 | nat-1b |
-|    |                 | 3-tier-web-Private-rt-1c | 10.75.6.0/24 | nat-1c |
-
-|    |                 | 3-tier-app-Private-rt-1a | 10.75.7.0/24 | nat-1a |
-|    |                 | 3-tier-app-Private-rt-1b | 10.75.8.0/24 | nat-1b |
-|    |                 | 3-tier-app-Private-rt-1c | 10.75.9.0/24 | nat-1c |
-
-|    |                 | 3-tier-db-Private-rt-1a  | 10.75.10.0/24 | nat-1a |
-|    |                 | 3-tier-db-Private-rt-1b  | 10.75.11.0/24 | nat-1b |
-|    |                 | 3-tier-db-Private-rt-1c  | 10.75.12.0/24 | nat-1c |
-
----
 
 ## Create a Cloud-Trail
 - Name: my-aws-Account-Activity
@@ -108,15 +109,16 @@ git clone https://github.com/harishnshetty/3-tier-aws-15-services.git
 |         | DB-Private-Subnet-1b  |
 |         | DB-Private-Subnet-1c  |
 
-- DB instance identifier: db-3tier  
-- Master username: admin  
-- Self managed: SuperadminPassword  
-- Burstable classes (includes t classes): db.t3.small  
-- Storage: 20 GB  
-- Virtual private cloud VPC: 3-tier-vpc  
-- SG: db-srv  
-- Uncheck [ Enable Enhanced monitoring ]
-
+| Parameter                          | Value                |
+|-------------------------------------|----------------------|
+| DB instance identifier              | db-3tier             |
+| Master username                     | admin                |
+| Self managed password               | SuperadminPassword   |
+| Instance class (Burstable)          | db.t3.small          |
+| Storage                            | 20 GB                |
+| Virtual private cloud VPC           | 3-tier-vpc           |
+| Security Group (SG)                 | db-srv               |
+| Enable Enhanced monitoring          | Unchecked            |
 ---
 
 ### Move on to the Secret manager
@@ -137,8 +139,11 @@ DB_DATABASE = db-3tier
 
 **Ref:** https://catalog.us-east-1.prod.workshops.aws/workshops/85cd2bb2-7f79-4e96-bdee-8078e469752a/en-US/part3/configuredatabase
 
-```sql
+```bash
 mysql -h CHANGE-TO-YOUR-RDS-ENDPOINT -u admin -p
+```
+
+```sql
 CREATE DATABASE webappdb;
 SHOW DATABASES;
 USE webappdb;
@@ -173,10 +178,12 @@ SELECT * FROM transactions;
 
 ## Create web launch template
 
-- Name: web-tier-lt
-- My Ami's: Web-Tier-IAM-IMAGE
-- Security groups: Web-Srv
-- IAM instance profile: 3-tier-web-role
+| Parameter              | Value                |
+|------------------------|----------------------|
+| Name                   | web-tier-lt          |
+| My AMI's               | Web-Tier-IAM-IMAGE   |
+| Security Groups        | Web-Srv              |
+| IAM Instance Profile   | 3-tier-web-role      |
 
 **User Data:**
 ```bash
@@ -202,10 +209,12 @@ sudo ./web.sh
 
 ## Create app launch template
 
-- Name: app-tier-lt
-- My Ami's: app-Tier-IAM-IMAGE
-- Security groups: app-Srv
-- IAM instance profile: 3-tier-web-role
+| Parameter              | Value                |
+|------------------------|----------------------|
+| Name                   | app-tier-lt          |
+| My AMI's               | app-Tier-IAM-IMAGE   |
+| Security Groups        | app-Srv              |
+| IAM Instance Profile   | 3-tier-web-role      |
 
 **User Data:**
 ```bash
@@ -231,47 +240,29 @@ sudo ./app.sh
 
 ## Create target group 
 
-### [ web tier ]
-- Name: Web-tier  
-- Port: 80  
-- VPC: 3-tier-vpc  
-
-### [ app tier ]
-- Name: App-tier  
-- Port: 4000  
-- VPC: 3-tier-vpc  
-- Health-check: /health  
-
+| Tier      | Name      | Port  | VPC         | Health-check   |
+|-----------|-----------|-------|-------------|---------------|
+| Web Tier  | Web-tier  | 80    | 3-tier-vpc  |               |
+| App Tier  | App-tier  | 4000  | 3-tier-vpc  | /health        |
 ---
 
 ## Create Load balancers
 
 ### Application Load Balancers
-
-#### app-alb
-- name: app-alb  
-- type: Internal-facing  
-- VPC: 3-tier-vpc  
-- AZ: App-Private-Subnet-1a, App-Private-Subnet-1b, App-Private-Subnet-1c  
-- Security groups: app-ALB  
-- Listeners and routing: 80 app-tier  
-
-#### web-alb
-- name: web-alb  
-- type: Internet-facing  
-- VPC: 3-tier-vpc  
-- AZ: Public-Subnet-1a, Public-Subnet-1b, Public-Subnet-1  
-- Security groups: Web-ALB  
-- Listeners and routing: 80 web-tier  
-
+| Load Balancer | Name     | Type            | VPC        | Availability Zones                                 | Security Groups | Listeners & Routing   |
+|---------------|----------|-----------------|------------|---------------------------------------------------|-----------------|----------------------|
+| app-alb       | app-alb  | Internal-facing | 3-tier-vpc | App-Private-Subnet-1a, 1b, 1c                     | app-ALB         | 80 app-tier          |
+| web-alb       | web-alb  | Internet-facing | 3-tier-vpc | Public-Subnet-1a, 1b, 1                           | Web-ALB         | 80 web-tier          |
 ---
 
+## Immediately update the `nginx.config` of your internal load balancer Address
+---
 ## Create Auto Scaling
 
 | Name            | Launch template | Instance types | VPC        | Subnets (AZs)                       | Load balancer | Desired | min | max | Scaling policy | Notifications    | Tag      |
 |-----------------|----------------|---------------|------------|--------------------------------------|---------------|---------|-----|-----|---------------|-----------------|----------|
 | web-tier-asg    | web-tier-lb    | t2.micro      | 3-tier-vpc | Web-Private-Subnet-1a, 1b, 1c        | web-tier      | 3       | 3   | 6   | 60            | web-tier-sns    | web-asg  |
-| app-tier-asg    | app-tier-lb    | t2.micro      | 3-tier-vpc | app-Private-Subnet-1a, 1b, 1c        | app-tier      | 3       | 3   | 6   | 60            | web-tier-sns    | web-asg  |
+| app-tier-asg    | app-tier-lb    | t2.micro      | 3-tier-vpc | app-Private-Subnet-1a, 1b, 1c        | app-tier      | 3       | 3   | 6   | 60            | app-tier-sns    | app-asg  |
 
 ---
 
