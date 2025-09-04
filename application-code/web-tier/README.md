@@ -10,6 +10,7 @@ sudo systemctl start nginx
 sudo systemctl enable nginx
 sudo service nginx restart
 sudo chkconfig nginx on
+sudo yum install git -y
 ```
 # INSTALLING Aws-Cli
 # (REF: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
