@@ -8,7 +8,8 @@ cd /home/ec2-user
 sudo yum install nginx -y
 sudo systemctl start nginx
 sudo systemctl enable nginx
-sudo systemctl status nginx
+sudo service nginx restart
+sudo chkconfig nginx on
 ```
 # INSTALLING Aws-Cli
 # (REF: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
@@ -68,3 +69,8 @@ sudo chkconfig nginx on
 
 
 # Replace the Internal-alb-address in the nginx
+
+# Create the Cloudtrial
+my-aws-account-activity
+
+Select --> Event History

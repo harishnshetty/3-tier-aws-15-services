@@ -1,38 +1,42 @@
-// DbConfig.js
-const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
+const AWS = require('aws-sdk');
+const secretsManager = new AWS.SecretsManager({
+  region: process.env.AWS_REGION || 'ap-south-1'
+});
 
-const secretName = "rds-mysql-secret";  
-const region = "ap-south-1";            
-
-const client = new SecretsManagerClient({ region });
-
-let DB_HOST = "";
-let DB_USER = "";
-let DB_PWD = "";
-let DB_DATABASE = "";
-
-// Immediately fetch the secret on startup
-(async () => {
+async function getDatabaseSecrets() {
   try {
-    const response = await client.send(
-      new GetSecretValueCommand({ SecretId: secretName })
-    );
-    const secret = JSON.parse(response.SecretString);
+    const secretName = process.env.DB_SECRET_NAME || "rds-mysql-secret1";
+    const data = await secretsManager.getSecretValue({ SecretId: secretName }).promise();
 
-    DB_HOST = secret.DB_HOST || secret.host;
-    DB_USER = secret.DB_USER || secret.username;
-    DB_PWD = secret.DB_PWD || secret.password;
-    DB_DATABASE = secret.DB_DATABASE || secret.dbname;
+    if ('SecretString' in data) {
+      return JSON.parse(data.SecretString);
+    } else {
+      throw new Error('Secret binary not supported');
+    }
+  } catch (error) {
+    console.error('Error retrieving secret:', error);
+    throw error;
+  }
+}
 
-    console.log("✅ Secrets loaded from AWS Secrets Manager");
-  } catch (err) {
-    console.error("❌ Error loading secrets:", err);
+module.exports = (async () => {
+  try {
+    const secrets = await getDatabaseSecrets();
+    return Object.freeze({
+      DB_HOST: secrets.host || secrets.DB_HOST,
+      DB_USER: secrets.username || secrets.DB_USER,
+      DB_PWD: secrets.password || secrets.DB_PWD,
+      DB_DATABASE: secrets.dbname || secrets.DB_DATABASE || secrets.database
+    });
+  } catch (error) {
+    console.error('Failed to load database configuration:', error);
+    return Object.freeze({
+      DB_HOST: process.env.DB_HOST || '',
+      DB_USER: process.env.DB_USER || '',
+      DB_PWD: process.env.DB_PWD || '',
+      DB_DATABASE: process.env.DB_DATABASE || ''
+    });
   }
 })();
 
-module.exports = Object.freeze({
-  get DB_HOST() { return DB_HOST; },
-  get DB_USER() { return DB_USER; },
-  get DB_PWD() { return DB_PWD; },
-  get DB_DATABASE() { return DB_DATABASE; }
-});
+
