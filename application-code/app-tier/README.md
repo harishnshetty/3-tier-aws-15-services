@@ -52,26 +52,21 @@ npm -v # Should print "10.9.3".
 
 ```bash
 #!/bin/bash
-cd /home/ec2-user
-sudo aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code/app-tier app-tier --recursive
-cd app-tier
-sudo chown -R ec2-user:ec2-user /home/ec2-user/app-tier
-sudo chmod -R 755 /home/ec2-user/app-tier
+# Log everything to /var/log/user-data.log
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
-npm install @aws-sdk/client-secrets-manager mysql2
+# Install AWS CLI v2 (if not already)
+yum install -y awscli
 
-npm install
-npm audit fix
+# Download application code from S3
+aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code /home/ec2-user/application-code --recursive
 
-pm2 start index.js 	#(Start Application with PM2, PM2 is process manager for NodeJS)
+# Go to app directory
+cd /home/ec2-user/application-code
 
-pm2 startup 			  #(Set PM2 to Start on Boot)
-# Generate systemd startup script for ec2-user (nvm-managed Node.js)
-sudo env PATH=$PATH:/home/ec2-user/.nvm/versions/node/v*/bin \
-    /home/ec2-user/.nvm/versions/node/v*/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
-
-# Save the current PM2 process list
-pm2 save
+# Make script executable and run it
+chmod +x app.sh
+sudo ./app.sh
 
 ```
 curl http://localhost:4000/health #(To do the health check)

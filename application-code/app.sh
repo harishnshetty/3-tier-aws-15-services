@@ -3,7 +3,7 @@ set -e   # exit on error
 
 # Download app-tier code
 cd /home/ec2-user
-aws s3 cp s3://three-tier-8745/application-code/app-tier app-tier --recursive
+aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code/app-tier app-tier --recursive
 
 # Ensure correct ownership/permissions
 sudo chown -R ec2-user:ec2-user /home/ec2-user

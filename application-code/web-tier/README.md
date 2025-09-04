@@ -47,25 +47,21 @@ npm -v # Should print "10.9.3".
 
 ```bash
 #!/bin/bash
-sudo aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code/web-tier web-tier --recursive
-sudo chown -R ec2-user:ec2-user /home/ec2-user
-sudo chmod -R 755 /home/ec2-user
+# Log everything to /var/log/user-data.log
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
+# Install AWS CLI v2 (if not already)
+yum install -y awscli
 
+# Download application code from S3
+aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code /home/ec2-user/application-code --recursive
 
-cd /home/ec2-user/web-tier
-npm install
-#npm audit fix
-cd /home/ec2-user/web-tier
-npm run build
+# Go to app directory
+cd /home/ec2-user/application-code
 
-cd /etc/nginx
-sudo mv nginx.conf nginx-backup.conf
-
-sudo aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code/nginx.conf . 
-sudo chmod -R 755 /home/ec2-user
-sudo service nginx restart
-sudo chkconfig nginx on
+# Make script executable and run it
+chmod +x web.sh
+sudo ./web.sh
 ```
 
 
