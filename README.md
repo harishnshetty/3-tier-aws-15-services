@@ -36,13 +36,13 @@
 | SG name      | inbound        | Access         | Description                                  |
 |--------------|----------------|---------------|----------------------------------------------|
 | Jump Server  | 22             | MY-ip         | access from my laptop                        |
-| Web-ALB      | 80, 443        | 0.0.0.0/24    | all access from internet                     |
-| Web-srv      | 80, 443, 22    | Web-ALB       | only front-alb and jump server access        |
+| 1. External-alb     | 80, 443        | 0.0.0.0/24    | all access from internet                     |
+| 2. Web-srv      | 80, 443, 22    | Web-ALB       | only front-alb and jump server access        |
 |              |                | jump-server   |                                              |
-| app-alb      | 4000, 80, 443  | web-srv       | only web-srv                                 |
-| app-Srv      | 4000, 80, 443, 22 | app-alb  | only app-alb and jump server access          |
+| 3. Internal-app-alb     |  80, 443  | 2. Web-srv       | only web-srv                                 |
+| 4. app-Srv      | 4000,  22 | 3. Internal-app-alb | only 3. Internal-app-alb and jump server access          |
 |              |                | jump-server   |                                              |
-| DB-srv       | 3306, 22       | app-srv       | only app-srv and jump server access          |
+| 5. DB-srv       | 3306, 22       | 4. app-Srv       | only app-srv and jump server access          |
 |              |                | jump-server   |                                              |
 
 ---
