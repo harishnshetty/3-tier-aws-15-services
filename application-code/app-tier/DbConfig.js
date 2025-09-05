@@ -5,7 +5,7 @@ const secretsManager = new AWS.SecretsManager({
 
 async function getDatabaseSecrets() {
   try {
-    const secretName = process.env.DB_SECRET_NAME || "rds-mysql-secret3";
+    const secretName = process.env.DB_SECRET_NAME || "<secret-name>"; 
     const data = await secretsManager.getSecretValue({ SecretId: secretName }).promise();
 
     if ('SecretString' in data) {

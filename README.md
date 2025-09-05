@@ -59,14 +59,14 @@
 | SG name      | inbound        | Access         | Description                                  |
 |--------------|----------------|---------------|----------------------------------------------|
 | Jump Server  | 22             | MY-ip         | access from my laptop                        |
-| 1. External-alb     | 80, 443        | 0.0.0.0/24    | all access from internet                     |
-| 2. Web-srv      | 80, 443, 22    | Web-ALB       | only front-alb and jump server access        |
+| 1. web-frontend-alb     | 80,         | 0.0.0.0/24    | all access from internet                     |
+| 2. Web-srv-sg      | 80,  22    | 1. web-frontend-alb       | only front-alb and jump server access        |
 |              |                | jump-server   |                                              |
-| 3. Internal-app-alb     |  80, 443  | 2. Web-srv      | only web-srv                                 |
-| 4. app-Srv      | 4000,  22 | 3. Internal-app-alb | only 3. Internal-app-alb and jump server access          |
+| 3. app-Internal-alb-sg     |  80,  | 2. Web-srv-sg      | only web-srv                                 |
+| 4. app-Srv-sg      | 4000,  22 | 3. app-Internal-alb-sg | only 3. app-Internal-alb-sg and jump server access          |
 |              |                | jump-server   |                                              |
-| 5. DB-srv       | 3306, 22       | 4. app-Srv       | only app-srv and jump server access          |
-|              |                | jump-server   |                                              |
+| 5. DB-srv       | 3306, 22       | 4. app-Srv-sg       | only app-srv and jump server access          |
+|              |      3306          | jump-server   |                                              |
 
 ---
 
@@ -112,7 +112,7 @@
 
 ---
 
-## Create the 2 S3 Buckets
+## Create the  S3 Buckets
 
 ```bash
 git clone https://github.com/harishnshetty/3-tier-aws-15-services.git
@@ -208,7 +208,7 @@ SELECT * FROM transactions;
 |------------------------|----------------------|
 | Name                   | web-tier-lt          |
 | My AMI's               | Web-Tier-IAM-IMAGE   |
-| Security Groups        | Web-Srv              |
+| Security Groups        | Web-srv-sg           |
 | IAM Instance Profile   | 3-tier-web-role      |
 
 **User Data:**
@@ -221,7 +221,7 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 yum install -y awscli
 
 # Download application code from S3
-aws s3 cp s3://three-tier-8745/application-code /home/ec2-user/application-code --recursive
+aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code /home/ec2-user/application-code --recursive
 
 # Go to app directory
 cd /home/ec2-user/application-code
@@ -239,7 +239,7 @@ sudo ./web.sh
 |------------------------|----------------------|
 | Name                   | app-tier-lt          |
 | My AMI's               | app-Tier-IAM-IMAGE   |
-| Security Groups        | app-Srv              |
+| Security Groups        | app-Srv-sg           |
 | IAM Instance Profile   | 3-tier-web-role      |
 
 **User Data:**
@@ -252,7 +252,7 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 yum install -y awscli
 
 # Download application code from S3
-aws s3 cp s3://three-tier-8745/application-code /home/ec2-user/application-code --recursive
+aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code /home/ec2-user/application-code --recursive
 
 # Go to app directory
 cd /home/ec2-user/application-code
@@ -277,8 +277,8 @@ sudo ./app.sh
 ### Application Load Balancers
 | Load Balancer | Name     | Type            | VPC        | Availability Zones                                 | Security Groups | Listeners & Routing   |
 |---------------|----------|-----------------|------------|---------------------------------------------------|-----------------|----------------------|
-| app-alb       | app-alb  | Internal-facing | 3-tier-vpc | App-Private-Subnet-1a, 1b, 1c                     | app-ALB         | 80 app-tier          |
-| web-alb       | web-alb  | Internet-facing | 3-tier-vpc | Public-Subnet-1a, 1b, 1                           | Web-ALB         | 80 web-tier          |
+| app-alb       | app-alb  | Internal-facing | 3-tier-vpc | App-Private-Subnet-1a, 1b, 1c                     | app-Internal-alb-sg         | 80 app-tier          |
+| web-alb       | web-alb  | Internet-facing | 3-tier-vpc | Public-Subnet-1a, 1b, 1                           | web-frontend-alb        | 80 web-tier          |
 ---
 
 ## Immediately update the `nginx.config` of your internal load balancer Address
