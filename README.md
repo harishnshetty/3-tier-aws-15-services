@@ -129,7 +129,7 @@ git clone https://github.com/harishnshetty/3-tier-aws-15-services.git
 
 | Name    | three-subnet-gp-rds   |
 |---------|-----------------------|
-| VPC     | 3-tier-vpc            |
+| VPC     | three-tier-rds-subnetgroup            |
 | AZ      | 1a, b, c              |
 | Subnets | DB-Private-Subnet-1a  |
 |         | DB-Private-Subnet-1b  |
