@@ -195,7 +195,7 @@ SELECT * FROM transactions;
     - AmazonS3ReadOnlyAccess
     - AmazonSSMManagedInstanceCore
 
-- 3-tier-db-role:
+- 3-tier-app-role:
     - AmazonS3ReadOnlyAccess
     - AmazonSSMManagedInstanceCore
     - SecretsManagerReadWrite
