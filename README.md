@@ -155,7 +155,7 @@ Other type of secret:
 DB_HOST = your rds Endpoint
 DB_USER = admin
 DB_PWD =  SuperadminPassword
-DB_DATABASE = db-3tier
+DB_DATABASE = webappdb
 ```
 - Secret name: rds-mysql-secret
 
