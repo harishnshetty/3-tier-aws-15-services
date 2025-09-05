@@ -5,6 +5,29 @@
 ## Architecture Overview
 ![Architecture Diagram](https://github.com/harishnshetty/image-data-project/blob/c699b36dbe836af410a57079adb2e161267e78fc/3tieraws-project-15services.jpg)
 
+
+---
+```
+1. VPC (12 Subnets, 10 Route Tables, 1 IGW, 3 NAT)
+2. Security Group (Cross-connection)
+3. EC2
+4. Auto Scaling Group (ASG with IAM & Launch Template)
+5. ALB (2 Target Groups)
+6. IAM (for Image Build & Access Control)
+7. RDS (MySQL)
+8. Secrets Manager
+9. S3 (Data + VPC Flow Logs)
+10. Cloud Watch
+11. SNS
+12. Cloud Trail
+13. Cloud Front
+14. ACM (SSL Certificates)
+15. WAF 
+16. Route 53
+```
+
+---
+
 ## Setup the Ec2-instance and create the IAM (WEB Tier)
 **REF:** [web-tier](https://github.com/harishnshetty/3-tier-aws-15-services/edit/main/application-code/web-tier)
 
@@ -39,7 +62,7 @@
 | 1. External-alb     | 80, 443        | 0.0.0.0/24    | all access from internet                     |
 | 2. Web-srv      | 80, 443, 22    | Web-ALB       | only front-alb and jump server access        |
 |              |                | jump-server   |                                              |
-| 3. Internal-app-alb     |  80, 443  | 2. Web-srv       | only web-srv                                 |
+| 3. Internal-app-alb     |  80, 443  | 2. Web-srv      | only web-srv                                 |
 | 4. app-Srv      | 4000,  22 | 3. Internal-app-alb | only 3. Internal-app-alb and jump server access          |
 |              |                | jump-server   |                                              |
 | 5. DB-srv       | 3306, 22       | 4. app-Srv       | only app-srv and jump server access          |
