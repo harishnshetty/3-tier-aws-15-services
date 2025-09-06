@@ -3,7 +3,7 @@
 ## [https://harishnshetty.github.io/projects.html](https://harishnshetty.github.io/projects.html)
 ## [youtube-Link](https://www.youtube.com/@devopsHarishNShetty)
 ## Architecture Overview
-![Architecture Diagram](https://github.com/harishnshetty/image-data-project/blob/c699b36dbe836af410a57079adb2e161267e78fc/3tieraws-project-15services.jpg)
+![Architecture Diagram](https://github.com/harishnshetty/image-data-project/blob/38fd34e5aedeeaa9ba61263d6a9d0c1b3421ac80/3tieraws-project-15services%20(1).jpg)
 
 
 ---
