@@ -26,31 +26,6 @@
 16. Route 53
 ```
 
----
-
-## Setup the Ec2-instance and create the IAM (WEB Tier)
-**REF:** [web-tier](https://github.com/harishnshetty/3-tier-aws-15-services/edit/main/application-code/web-tier)
-
-**Only Setup the Packages:**  
-- mginx  
-- nvm  
-
----
-
-## Setup the Ec2-instance and create the IAM (APP Tier)
-**REF:** [app-tier](https://github.com/harishnshetty/3-tier-aws-15-services/tree/main/application-code/app-tier)
-
-**Only Setup the Packages:**  
-- install  
-    - mysql client  
-    - nvm  
-    - pm2  
-
----
-
-## Create images for both web and app Tier
-- Web-Tier-IAM-IMAGE  
-- APP-Tier-IAM-IMAGE  
 
 ---
 
@@ -105,6 +80,31 @@
 |     |                   | 3-tier-db-Private-rt-1b         | 10.75.11.0/24     | nat-1b      |                                               |
 |     |                   | 3-tier-db-Private-rt-1c         | 10.75.12.0/24     | nat-1c      |                                               |
  
+---
+
+## Setup the Ec2-instance and create the IAM (WEB Tier)
+**REF:** [web-tier](https://github.com/harishnshetty/3-tier-aws-15-services/edit/main/application-code/web-tier)
+
+**Only Setup the Packages:**  
+- mginx  
+- nvm  
+
+---
+
+## Setup the Ec2-instance and create the IAM (APP Tier)
+**REF:** [app-tier](https://github.com/harishnshetty/3-tier-aws-15-services/tree/main/application-code/app-tier)
+
+**Only Setup the Packages:**  
+- install  
+    - mysql client  
+    - nvm  
+    - pm2  
+
+---
+
+## Create images for both web and app Tier
+- Web-Tier-IAM-IMAGE  
+- APP-Tier-IAM-IMAGE  
 
 
 ## Create a Cloud-Trail
