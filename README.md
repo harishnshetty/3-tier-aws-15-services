@@ -86,7 +86,7 @@
 **REF:** [web-tier](https://github.com/harishnshetty/3-tier-aws-15-services/edit/main/application-code/web-tier)
 
 **Only Setup the Packages:**  
-- mginx  
+- Nginx  
 - nvm  
 
 ---
